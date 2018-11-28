@@ -208,15 +208,21 @@ function makeMap(divId, zoomLevel, longitude, latitude) {
 //
 function makeMarker(map, longitude, latitude) {
 	var location = L.latLng({ lon: longitude, lat: latitude });	//create marker at given position
-	var marker = L.marker(location, { draggable: false });			//make a draggable marker
+	var marker = L.marker(location, { draggable: true });			//make a draggable marker
 	marker.addTo(map);										//add marker to map
 	return marker;				//return marker object
 } //end function
+
+function makeFriendMarker(longitude, latitude) {
+    var marker = L.marker(L.latLng({ lon: longitude, lat: latitude }));
+    marker.addTo(map);
+    return marker;
+}
 
 function populateMap() {
 	$.getJSON(url, function (cities) {
 		$("#cities").empty();
 		for (let i of cities)
-			makeMarker(map, i["longitude"], i["latitude"]);
+			makeFriendMarker(i["longitude"], i["latitude"]);
 	});
 }
