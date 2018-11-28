@@ -38,13 +38,13 @@ try	{
 		}
 } //end method
 
-@Path("/{id}")
+@Path("/{name}")
 @GET
 @Produces(MediaType.APPLICATION_JSON)
-public City getOneCity(@PathParam("id") String id)
+public City getOneCity(@PathParam("name") String name)
 {
 DynamoDBMapper mapper=DynamoDBUtil.getDBMapper(Config.REGION,Config.LOCAL_ENDPOINT);
-City city=mapper.load(City.class,id);
+City city=mapper.load(City.class,name);
 
 if (city==null)
 	throw new WebApplicationException(404);
@@ -63,12 +63,12 @@ return result;
 } //end method
 
 
-@Path("/{id}")
+@Path("/{name}")
 @DELETE
-public Response deleteOneCity(@PathParam("id") String id)
+public Response deleteOneCity(@PathParam("name") String name)
 {
 DynamoDBMapper mapper=DynamoDBUtil.getDBMapper(Config.REGION,Config.LOCAL_ENDPOINT);
-City city=mapper.load(City.class,id);
+City city=mapper.load(City.class,name);
 
 if (city==null)
 	throw new WebApplicationException(404);

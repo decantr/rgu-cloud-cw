@@ -6,10 +6,7 @@ var map;
 
 //the document ready function
 try {
-	$(function () {
-		init();
-	}
-	);
+	$( function () { init(); } );
 } catch (e) {
 	alert("*** jQuery not loaded. ***");
 }
@@ -54,7 +51,7 @@ function init() {
 	//set click handler of Delete Selected button
 	$("#deleteCity").click(function () {
 		$("#cities .selected").each(function () {
-			deleteCity($(this).attr("id"));
+			deleteCity($(this).attr("name"));
 			$(this).remove();
 		}
 		);
@@ -101,10 +98,9 @@ function populateCities() {
 			$("#cities").empty();		//find city list and remove its children
 			for (var i in cities) {
 				var city = cities[i];		//get 1 city from the JSON list
-				var id = city["id"];		//get city ID from JSON data
 				var name = city["name"];	//get city name from JSON data
 				//compose HTML of a list item using the city ID and name.
-				var htmlCode = "<li id='" + id + "'>" + name + "</li>";
+				var htmlCode = "<li id='" + name + "'>" + name + "</li>";
 				$("#cities").append(htmlCode);	//add a child to the city list
 			}
 
@@ -129,13 +125,13 @@ function cityClicked(id) {
 
 	// Find the selected city (i.e. list item) and add the class "selected" to it.
 	// This will highlight it according to the "selected" class.
-	$("#" + id).addClass("selected");
+	$("#" + name).addClass("selected");
 
 	//retrieve city coordinates from city service
-	let urlid = url + "/" + id;		//URL of service, notice that ID is part of URL path
+	let urlname = url + "/" + name;		//URL of service, notice that ID is part of URL path
 
 	//use jQuery shorthand Ajax function to get JSON data
-	$.getJSON(urlid,					//URL of service
+	$.getJSON(urlname,					//URL of service
 		function (jsonData)	//successful callback function
 		{
 			longitude = jsonData["longitude"];			//get longitude from JSON data
@@ -148,11 +144,11 @@ function cityClicked(id) {
 	);
 } //end function
 
-function deleteCity(id) {
-	let urlid = url + "/" + id;				//URL pattern of delete service
+function deleteCity(name) {
+	let urlname = url + "/" + name;				//URL pattern of delete service
 	var settings = { type: "DELETE" };	//options to the $.ajax(...) function call
 
-	$.ajax(urlid, settings);
+	$.ajax(urlname, settings);
 } //end function
 
 function showCityWeather(longitude, latitude) {
