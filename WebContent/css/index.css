@@ -1,0 +1,32 @@
+body
+{
+font-family: Arial;
+font-size: 16pt;
+}
+
+#cityDetails
+{
+text-align: center;
+}
+
+#cityDetails section
+{
+padding: 5px;
+}
+
+#map
+{
+width: 640px;
+height: 480px;
+}
+
+.selected
+{
+color: #ff0000;
+font-weight: bold;
+}
+
+img
+{
+vertical-align: middle;
+}
