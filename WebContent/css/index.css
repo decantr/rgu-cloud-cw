@@ -30,3 +30,8 @@ img
 {
 vertical-align: middle;
 }
+
+.small {
+	font-size: 10pt;
+	display: inline;
+}

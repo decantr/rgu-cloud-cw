@@ -1,7 +1,7 @@
 //API keys
 const mapBoxApiKey = "pk.eyJ1IjoiZGVjYW50ZXIiLCJhIjoiY2pvejF1dndxMmhkczN2a2ZnbzN4N3ZuZCJ9.GmzH8RHzlfz_APpRuIauWA"
 const url = "api/city"
-var friends = []
+var FRIENDMARKERS = []
 var CURRENTUSER;
 var CURRENTUSERMARKER;
 var MAP;
@@ -104,43 +104,31 @@ function createNewUser(username) {
 function getFriends() {
 
 	$("#listFriends").empty()
-	friends = []
+
+	for ( let i of FRIENDMARKERS )
+		MAP.removeLayer(i)
+
+	FRIENDMARKERS = []
+
 	for (let i of CURRENTUSER.friends) {
-		$("#listFriends").append("<li id='" + i + "'>" + i + "</li>")
-		friends.push(i)
-	}
+		$.getJSON(url + "/" + i, function (data) {
+			$("#listFriends").append(
+				"<li id='" + data.name + "'>" + data.name + "<p class='small'> lat: " +
+				data.latitude + " long: " + data.longitude + "</p></li>")
+				let m = makeFriendMarker(data["latitude"], data["longitude"])
+				console.log(data.name)
+				m.name = data.name
+				FRIENDMARKERS.push(m)
 
-	$("#listFriends li").click(function () {
-		friendClicked($(this).attr("id"))
-	})
-
-}
-
-function drawFriends() {
-
-	$.getJSON(url + "/" + CURRENTUSER.name, function (data) {
-		for (let i of data.friends)
-			$.getJSON(url + "/" + i, function (d) {
-				makeFriendMarker(d["latitude"], d["longitude"])
+			$("#listFriends li").click(function () {
+				console.log($(this).attr("id"))
+				let m = FRIENDMARKERS.find(o => o.name == $(this).attr("id"))
+				MAP.setZoom(7);
+				MAP.panTo(m.getLatLng());
 			})
-	})
-
-}
-
-function friendClicked(id) {
-	$("#cities li").removeClass("selected")
-
-	$("#" + name).addClass("selected")
-
-	let urlname = url + "/" + name
-
-	$.getJSON(urlname, function (data) {
-		latitude = data.latitude
-		longitude = data.longitude
-
-		$("#friendInformation h1").html(data.name + "\n\t lat: " + latitude + "lon: " + longitude)
+		})
 	}
-	)
+
 }
 
 function deleteCity(name) {
@@ -180,6 +168,7 @@ function currentLocation() {
 function makeFriendMarker(latitude, longitude) {
 	let marker = L.marker(L.latLng({ lat: latitude, lon: longitude }))
 	marker.addTo(MAP)
+	return marker
 }
 
 function login(username) {
@@ -188,8 +177,6 @@ function login(username) {
 			$("#loginDialog").dialog("close")
 			$("#main").show()
 			CURRENTUSER = data
-			getFriends()
-			drawFriends()
 			main()
 		} else {
 			reportToUser("Failed", "not a valid user")
@@ -276,19 +263,17 @@ function updateLocation() {
 		type: "POST",
 		data: data,
 		statusCode: {
-			201: function (response) {
+			201: function () {
 				$("#currentLatitude").val(data.latitude)
 				$("#currentLongitude").val(data.longitude)
 			},
-			400: function (response) {
+			400: function () {
 				alert("Oops, something went wrong");
 				$("#currentLatitude").val(CURRENTUSER.latitude)
 				$("#currentLongitude").val(CURRENTUSER.longitude)
 			}
 		}
 	});
-	console.log(d)
-
 }
 
 function refresh() {
