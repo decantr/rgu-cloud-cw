@@ -79,12 +79,15 @@ public Response newFriendRequest ( @PathParam ( "name" ) String name , @PathPara
 	try {
 		DynamoDBMapper mapper = DynamoDBUtil.getDBMapper( Config.REGION , Config.LOCAL_ENDPOINT );
 		City sender = getCity( name , mapper );
-		City receiver = getCity( name , mapper );
+		City receiver = getCity( newFriend , mapper );
 
 		sender.sendRequest( newFriend );
 		receiver.receiveRequest( name );
 
-		if ( sender.getName().equals( name ) || receiver.getName().equals( newFriend ) ) {
+		System.out.println(sender.getName());
+		System.out.println(receiver.getName());
+
+		if ( ! sender.getName().equals( name ) || ! receiver.getName().equals( newFriend ) ) {
 			return Response.status( 400 ).entity( "User" + newFriend + " Does Not Exist" ).build();
 		}
 		mapper.save( sender );
