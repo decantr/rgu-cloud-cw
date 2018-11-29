@@ -25,22 +25,23 @@
 <body>
 	<section id="main">
 		<section>
+			<p><p id="currentLongitude"></p>° N, <p id="currentLatitude"></p>° W</p>
 			<h1>List of Friends</h1>
-			<ul id="friends">
+			<ul id="listFriends">
 			</ul>
 			<h1>List of Requests</h1>
-			<ul id="requests">
+			<ul id="listRequests">
 			</ul>
-			<button id="openFriendRequestDialog">Send Friend Request</button>
+			<button id="friendRequestDialogOpen">Send Friend Request</button>
 
 			<section id="friendRequestDialog">
 				<section>
 					Friend Name:
-					<input type="text" id="friendName">
+					<input type="text" id="friendRequestUsername">
 				</section>
 				<section>
-					<button id="sendRequest">Save City</button>
-					<button id="cancelRequest">Cancel</button>
+					<button id="friendRequestSend">Send Request</button>
+					<button id="friendRequestCancel">Cancel</button>
 				</section>
 			</section>
 		</section>
@@ -48,18 +49,23 @@
 		<section id="newUserDetails">
 			<section>
 				User Name:
-				<input type="text" id="newUserName">
+				<input type="text" id="newUserUsername">
 			</section>
 
 			<section>
-				<button id="saveNewUser">Save User</button>
-				<button id="cancelNewUser">Cancel</button>
+				<button id="newUserAddButton">Save User</button>
+				<button id="newUserCancelButton">Cancel</button>
 			</section>
 		</section>
 
 		<section id="map"></section>
 
 		<button id="refresh">Refresh</button>
+
+		<!-- dummy error box -->
+		<div id="dummyDialog">
+			<p></p>
+		</div>
 	</section>
 
 	<!-- login box -->
@@ -69,15 +75,10 @@
 			<input type="text" id="loginUsername">
 		</section>
 		<section>
-			<button id="login">login</button>
-			<button id="newUser">new user</button>
+			<button id="loginButton">login</button>
+			<button id="loginNewUserButton">new user</button>
 		</section>
 	</section>
-
-	<!-- dummy error box -->
-	<div id="dummyDialog">
-		<p></p>
-	</div>
 </body>
 
 </html>

@@ -1,17 +1,15 @@
 //API keys
-var mapBoxApiKey = "pk.eyJ1IjoiZGVjYW50ZXIiLCJhIjoiY2pvejF1dndxMmhkczN2a2ZnbzN4N3ZuZCJ9.GmzH8RHzlfz_APpRuIauWA";
-var openWeatherAPIKey = "4cfa266fa9af1befdf750a15183feab6";
-var url = "api/city";
-var map;
-
-var main;
-var CURRENTLYLOGGEDINUSER = ""
+const mapBoxApiKey = "pk.eyJ1IjoiZGVjYW50ZXIiLCJhIjoiY2pvejF1dndxMmhkczN2a2ZnbzN4N3ZuZCJ9.GmzH8RHzlfz_APpRuIauWA"
+const url = "api/city"
+var CURRENTUSER;
+var CURRENTUSERMARKER;
+var MAP;
 
 //the document ready function
 try {
-	$(function () { init(); });
+	$(function () { init() })
 } catch (e) {
-	alert("*** jQuery not loaded. ***");
+	alert("*** jQuery not loaded. ***")
 }
 
 //
@@ -19,286 +17,165 @@ try {
 //
 function init() {
 	$("#main").hide()
-	//make dialog box
+
+	// make login dialog box
 	$("#loginDialog").dialog({
-		modal: true,			//modal dialog to disable parent when dialog is active
-		autoOpen: true,		//set autoOpen to false, hidding dialog after creation
-		title: "Login"	//set title of dialog box
-	}
-	);
-	//set click handler of Add City button
-	$("#login").click(function () {
-		login($("#username").val());
-	}
-	);
-}
-
-function main(){
-	map = makeMap("map", 1, 0.0, 0.0);	//make map using Leaflet or GoogleMap API
-	var marker = makeMarker(map, 0.0, 0.0);	//make and put marker on map, keeping reference
-
-	//make dialog box
-	$("#cityDetails").dialog({
-		modal: true,			//modal dialog to disable parent when dialog is active
-		autoOpen: false,		//set autoOpen to false, hidding dialog after creation
-		title: "Add City",	//set title of dialog box
-		minWidth: 500,
-		minHeight: 400
-	}
-	);
-
-	//set click handler of Add City button
-	$("#addCity").click(function () {
-		$("#cityName").val("");					//clear city name text input
-		$("#cityDetails").dialog("open", true);	//open dialog box
-	}
-	);
-
-	//make dialog box
-	$("#friendAddDialog").dialog({
+		modal: true,
+		autoOpen: true,
+		title: "Login"
+	})
+	$("#loginButton").click(function () {
+		login($("#loginUsername").val())
+	})
+	// new user handling
+	$("#loginNewUserButton").click(function () {
+		$("#newUserUsername").val("")
+		$("#newUserDetails").dialog("open", true)
+	})
+	$("#newUserDetails").dialog({
 		modal: true,
 		autoOpen: false,
-		title: "Add Friend",
+		title: "Create New User",
 		minWidth: 500,
 		minHeight: 400
-	}
-	);
-
-	$("#addFriendDialog").click(function () {
-		$("#friendName").val("");					//clear city name text input
-		$("#friendAddDialog").dialog("open", true);	//open dialog box
-	}
-	);
-
-	//set click handler of Save City button in Add City dialog
-	$("#addFriend").click(function () {
-		addFriend();
-		$("#friendAddDialog").dialog("close");
-	}
-	);
-
-	//set click handler of Cancel button in Add City dialog
-	$("#cancelCity").click(function () {
-		$("#cityDetails").dialog("close");
-	}
-	);
-
-	//set click handler of Save City button in Add City dialog
-	$("#saveCity").click(function () {
-		saveCity(marker);	//save city to web service
-		$("#cityDetails").dialog("close");
-	}
-	);
-
-	//set click handler of Delete Selected button
-	$("#deleteCity").click(function () {
-		$("#cities .selected").each(function () {
-			deleteCity($(this).attr("name"));
-			$(this).remove();
-		}
-		);
-	});
-
-	$("#test").click(function () {
-		getFriends(CURRENTLYLOGGEDINUSER)
 	})
-
-	$("#openFriendRequestDialog").click(function () {
-		$("#friendRequestDialog").dialog("open", true)
-	});
-
-	$("#sendRequest").click(function () {
-		sendFriendRequest(CURRENTLYLOGGEDINUSER, $("#friendName").val())
-		$("#friendRequestDialog").dialog("close")
-	});
-
-	$("#cancelRequest").click(function () {
-		$("#friendName").val("")
-		$("#friendRequestDialog").dialog("close");
-	});
-
+	$("#newUserAddButton").click(function () {
+		createNewUser($("#newUserUsername").val())
+		$("#newUserDetails").dialog("close")
+	})
+	$("#newUserCancelButton").click(function () {
+		$("#newUserDetails").dialog("close")
+	})
+	// friend request
 	$("#friendRequestDialog").dialog({
 		modal: true,
 		autoOpen: false,
 		title: "Send Friend Request"
 	})
+	$("#friendRequestDialogOpen").click(function () {
+		$("#friendRequestDialog").dialog("open", true)
+	})
+	$("#friendRequestSend").click(function () {
+		sendFriendRequest($("#friendRequestUsername").val())
+		$("#friendRequestDialog").dialog("close")
+	})
+	$("#friendRequestCancel").click(function () {
+		$("#friendRequestUsername").val("")
+		$("#friendRequestDialog").dialog("close")
+	})
 
-	populateCities();	//populate list of known cities
+}
+
+function main() {
+	MAP = makeMap("map", 1, 0.0, 0.0)
+	CURRENTUSERMARKER = currentLocation()
+
+	$("#refresh").click(function () {
+		getFriends()
+	})
+
+	getFriends()
 	getFriendRequests()
 }
 
-//
-// save a city using the City service, given its position
-//
-function saveCity(marker) {
-	var longitude = marker.getLatLng().lng;	//get longitude from position
-	var latitude = marker.getLatLng().lat;	//get latitude from position
+function createNewUser(username) {
+	let longitude = 57.1497
+	let latitude = 2.0943
 
-	var name = $("#cityName").val();	//get city name input text box value
-
-	var data = {
-		"name": name,				//request parameters as a map
+	let data = {
+		"name": username,
 		"longitude": longitude,
 		"latitude": latitude
-	};
+	}
 
-	//use jQuery shorthand Ajax POST function
-	$.post(url,			//URL of service
-		data,			//parameters of request
-		function ()		//successful callback function
-		{
-			alert("City saved: " + name + " (" + longitude + "," + latitude + ")");
-		} //end callback function
-	); //end post call
-} //end function
+	$.post(url, data, function () {
+		alert("User saved: " + name + " (" + longitude + "," + latitude + ")")
+	}
+	)
+}
 
-//
-// retrieve all cities from City service and populate list
-//
-function populateCities() {
-	//use jQuery shorthand Ajax function to get JSON data
-	$.getJSON(url,				//URL of service
-		function (cities)		//successful callback function
-		{
-			$("#cities").empty();		//find city list and remove its children
-			for (var i in cities) {
-				var city = cities[i];		//get 1 city from the JSON list
-				var name = city["name"];	//get city name from JSON data
-				//compose HTML of a list item using the city ID and name.
-				var htmlCode = "<li id='" + name + "'>" + name + "</li>";
-				$("#cities").append(htmlCode);	//add a child to the city list
-			}
+function getFriends() {
 
-			//look for all list items (i.e. cities), set their click handler
-			$("#cities li").click(function () {
-				// Call the cityClicked(...) function.
-				// The parameter is the ID of the city clicked.
-				// See how we get the ID from the located li element/tag.
-				cityClicked($(this).attr("id"));
-			} //end click handler function
-			); //end click call
-		} //end Ajax callback function
-	); //end Ajax call
-} //end function
+	$("#listFriends").empty()
+	for (let i of CURRENTUSER.friends) {
+		$("#listFriends").append("<li id='" + i + "'>" + i + "</li>")
 
-//
-// click handler of a city in the list
-// parameter ID is the unique city identifier
-//
-function cityClicked(id) {
-	$("#cities li").removeClass("selected"); //remove all list items from the class "selected, thus clearing previous selection
+	}
 
-	// Find the selected city (i.e. list item) and add the class "selected" to it.
-	// This will highlight it according to the "selected" class.
-	$("#" + name).addClass("selected");
+	$("#cities li").click(function () {
+		cityClicked($(this).attr("id"))
+	})
 
-	//retrieve city coordinates from city service
-	let urlname = url + "/" + name;		//URL of service, notice that ID is part of URL path
+}
 
-	//use jQuery shorthand Ajax function to get JSON data
-	$.getJSON(urlname,					//URL of service
-		function (jsonData)	//successful callback function
-		{
-			longitude = jsonData["longitude"];			//get longitude from JSON data
-			latitude = jsonData["latitude"];			//get latitude from JSON data
-			// *** Add JS code to update h1 on page to show city name
-			//alert("Add JS to show city name on page.\nThere is a h1 inside the section of weather details.");
-			$("#cityWeather h1").html(jsonData["name"] + " Weather");
-			showCityWeather(longitude, latitude);
-		}
-	);
-} //end function
+function drawFriends() {
+
+	$.getJSON(url + "/" + CURRENTUSER.name, function (data) {
+		for (let i of data.friends)
+			$.getJSON(url + "/" + i, function (d) {
+				makeFriendMarker(d["longitude"], d["latitude"])
+			})
+	})
+
+}
+
+function friendClicked(id) {
+	$("#cities li").removeClass("selected")
+
+	$("#" + name).addClass("selected")
+
+	let urlname = url + "/" + name
+
+	$.getJSON(urlname, function (data) {
+		longitude = data.longitude
+		latitude = data.latitude
+
+		$("#friendInformation h1").html(data.name + "\n\tlon: " + longitude + " lat: " + latitude)
+	}
+	)
+}
 
 function deleteCity(name) {
-	let urlname = url + "/" + name;				//URL pattern of delete service
-	var settings = { type: "DELETE" };	//options to the $.ajax(...) function call
+	let urlname = url + "/" + name
+	let settings = { type: "DELETE" }
 
-	$.ajax(urlname, settings);
-} //end function
+	$.ajax(urlname, settings)
+}
 
-function showCityWeather(longitude, latitude) {
-	let urlmap = "http://api.openweathermap.org/data/2.5/weather";		//URL of OpenWeatherMap service
-
-	// Compose request parameters as a map
-	// The following parameters (in the request) are defined in the OpenWeatherMap API.
-	var data = {
-		"lat": latitude,		//latitude
-		"lon": longitude,		//longitude
-		"cnt": 1,				//data count to return
-		"units": "metric",		//unit of result
-		"appid": openWeatherAPIKey
-	};
-
-	//
-	// Retrieve weather data from OpenWeatherMap web service.
-	// When the JSON data come back, update information on the web page.
-	//
-	$.getJSON(urlmap,
-		data,
-		function (reply) {
-			var weather = reply["weather"][0]["main"];
-			var icon = reply["weather"][0]["icon"];
-			var temp = reply["main"]["temp"];
-			$("#cityWeather img").attr("src", "http://openweathermap.org/img/w/" + icon + ".png");
-			$("#cityWeather span").html(temp + "C");
-		} //end callback function
-	); //end Ajax call
-} //end function
-
-//
-//create map in a given division, given its centre coordinates
-//the map is returned as it is need to place the marker
-//
 function makeMap(divId, zoomLevel, longitude, latitude) {
-	var location = L.latLng(longitude, latitude);		//create location
-	var map = L.map(divId).setView(location, zoomLevel);	//put map into division
+	let location = L.latLng(longitude, latitude)
+	let tempMap = L.map(divId).setView(location, zoomLevel)
 	L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=' + mapBoxApiKey,
 		{
-			attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+			attribution: 'Map data &copy <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
 			maxZoom: 18,
 			id: 'mapbox.streets',
 			accessToken: mapBoxApiKey
 		}
-	).addTo(map);
-	return map;	//return map object
-} //end function
-
-//
-//create a marker on a map
-//the marker is returned as we need to get its position later
-//
-function makeMarker(map, longitude, latitude) {
-	var location = L.latLng({ lon: longitude, lat: latitude });	//create marker at given position
-	var marker = L.marker(location, { draggable: true });			//make a draggable marker
-	marker.addTo(map);										//add marker to map
-	return marker;				//return marker object
-} //end function
-
-function makeFriendMarker(longitude, latitude) {
-	var marker = L.marker(L.latLng({ lon: longitude, lat: latitude }));
-	marker.addTo(map);
-	return marker;
+	).addTo(tempMap)
+	return tempMap
 }
 
-// function populateMap() {
+function currentLocation() {
+	let location = L.latLng({ lon: CURRENTUSER.longitude, lat: CURRENTUSER.latitude })
+	let marker = L.marker(location, { draggable: true })
+	marker.addTo(MAP)
+	return marker
+}
 
-// 	$.getJSON(url, function (data) {
-// 		for (let i of data)
-// 			makeFriendMarker(i["longitude"], i["latitude"]);
-// 	});
+function makeFriendMarker(longitude, latitude) {
+	let marker = L.marker(L.latLng({ lon: longitude, lat: latitude }))
+	marker.addTo(MAP)
+}
 
-// }
-
-
-
-
-function login(username){
+function login(username) {
 	$.getJSON(url + "/" + username, function (data) {
-		if (data != null && data.name == username ) {
+		if (data != null && data.name == username) {
 			$("#loginDialog").dialog("close")
 			$("#main").show()
-			CURRENTLYLOGGEDINUSER = username
-			getFriends(CURRENTLYLOGGEDINUSER)
+			CURRENTUSER = data
+			getFriends()
+			drawFriends()
 			main()
 		} else {
 			reportToUser("Failed", "not a valid user")
@@ -317,26 +194,14 @@ function reportToUser(title, text) {
 	$("#dummyDialog").dialog("open")
 }
 
-// get all of a users friends as friend objects
-function getFriends(currentUser) {
 
-	$.getJSON(url + "/" + currentUser, function (data) {
-		for (let i of data.friends)
-			$.getJSON(url + "/" + i, function (d) {
-				makeFriendMarker(d["longitude"], d["latitude"]);
-			})
-	})
-
-}
 
 // send a friend request
-function sendFriendRequest( currentUser , otherUser ) {
+function sendFriendRequest(otherUser) {
 
-	let end = url + "/" + currentUser + "/" + otherUser
+	let end = url + "/" + CURRENTUSER.name + "/" + otherUser
 
-	console.log(currentUser + " and " + otherUser)
-
-	$.post( end, function ( d ) {
+	$.post(end, function (d) {
 		console.log(d)
 		reportToUser("Success", "Friend request sent")
 	})
@@ -344,30 +209,21 @@ function sendFriendRequest( currentUser , otherUser ) {
 }
 
 // get friend requests
-function getFriendRequests ( ) {
-	let end = url + "/" + CURRENTLYLOGGEDINUSER
-	let requets = []
-
-	console.log(end)
-
-	$.get( end , function ( data ) {
-		console.log(data.receivedRequests)
-		for ( let i of data.receivedRequests ) {
-			console.log(i)
-			let c = "<li id='" + i + "'>" + i + "</li>";
-			$("#requests").append(c)
-			requets.push(i)
-			$("#requests li").click(function () {
-				requestClicked($(this).attr("id"));
-			})
-		}
-	})
+function getFriendRequests() {
+	for (let i of CURRENTUSER.receivedRequests) {
+		let c = "<li id='" + i + "'>" + i + "</li>"
+		$("#listRequests").append(c)
+		$("#listRequests li").click(function () {
+			console.log($(this).attr("id"))
+			requestClicked($(this).attr("id"))
+		})
+	}
 }
 
 
-function acceptFriend( friendName ) {
-	$.post(url + "/" + CURRENTLYLOGGEDINUSER +"/" + friendName, function () {
-		console.log("success")
+function acceptFriend(friendName) {
+	$.post(url + "/" + CURRENTUSER.name + "/" + friendName, function (d) {
+		console.log(d)
 	})
 }
 
@@ -376,21 +232,27 @@ function removeFriend(friendName) {
 }
 
 function requestClicked(friendName) {
-	$(function() {
-    $( "#dummyDialog" ).dialog({
+	$(function () {
+		$("#dummyDialog").dialog({
 			resizable: false,
 			title: "Accept friend request",
-      modal: true,
-      buttons: {
-        "Accept": function() {
-					acceptFriend(friendName);
-					$( "#dummyDialog" ).dialog("close")
-        },
-        "Deny": function() {
-					removeFriend(friendName);
-					$( "#dummyDialog" ).dialog("close")
-        }
-      }
-    });
-  });
+			modal: true,
+			buttons: {
+				"Accept": function () {
+					acceptFriend(friendName)
+					$("#dummyDialog").dialog("close")
+				},
+				"Deny": function () {
+					removeFriend(friendName)
+					$("#dummyDialog").dialog("close")
+				}
+			}
+		})
+	})
+}
+
+// update CURRENTUSER location
+function updateLocation () {
+	$("currentLongitude").val(CURRENTUSERMARKER.location)
+	$("currentLatitude").val(CURRENTUSERMARKER)
 }
