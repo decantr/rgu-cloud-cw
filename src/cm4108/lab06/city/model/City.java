@@ -10,16 +10,20 @@ import java.util.List;
 public class City {
 private String name;
 private double longitude, latitude;
-private List< String > friends;
+private List < String > friends;
+private List < String > sentRequests;
+private List < String > receivedRequests;
 
 public City () {
 } //end method
 
-public City ( String name , double longitude , double latitude , List<String> friends ) {
+public City ( String name , double longitude , double latitude , List < String > friends , List < String > sentRequests , List < String > receivedRequests ) {
 	this.setName( name );
 	this.setLongitude( longitude );
 	this.setLatitude( latitude );
 	this.setFriends( friends );
+	this.setSentRequests( sentRequests );
+	this.setReceivedRequests( receivedRequests );
 } //end method
 
 @DynamoDBHashKey ( attributeName = "name" )
@@ -50,15 +54,34 @@ public void setLatitude ( double latitude ) {
 } //end method
 
 @DynamoDBAttribute ( attributeName = "friends" )
-public List< String > getFriends () {
+public List < String > getFriends () {
 	return friends;
 }
 
-public void setFriends ( List< String > friends ) {
+public void setFriends ( List < String > friends ) {
 	this.friends = friends;
 }
 
 public void addFriend ( String name ) {
 	this.friends.add( name );
 }
+
+@DynamoDBAttribute ( attributeName = "sentRequests" )
+public List < String > getSentRequests () {
+	return sentRequests;
+}
+
+public void setSentRequests ( List < String > sentRequests ) {
+	this.friends = sentRequests;
+}
+
+@DynamoDBAttribute ( attributeName = "receivedRequests" )
+public List < String > getReceivedRequests () {
+	return receivedRequests;
+}
+
+public void setReceivedRequests ( List < String > receivedRequests ) {
+	this.friends = receivedRequests;
+}
+
 } //end class
