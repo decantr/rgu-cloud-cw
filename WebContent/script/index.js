@@ -78,11 +78,13 @@ function init() {
 			$(this).remove();
 		}
 		);
-	}
-	);
+	});
+
+	$("#test").click(function () {
+		getFriends("jeffrey")
+	})
 
 	populateCities();	//populate list of known cities
-	populateMap();
 }
 
 
@@ -247,10 +249,25 @@ function makeFriendMarker(longitude, latitude) {
 	return marker;
 }
 
-function populateMap() {
-	$.getJSON(url, function (cities) {
-		$("#cities").empty();
-		for (let i of cities)
-			makeFriendMarker(i["longitude"], i["latitude"]);
-	});
+// function populateMap() {
+
+// 	$.getJSON(url, function (data) {
+// 		for (let i of data)
+// 			makeFriendMarker(i["longitude"], i["latitude"]);
+// 	});
+
+// }
+
+// get all of a users friends as friend objects
+function getFriends( username ) {
+
+	$.getJSON( url + "/" + username , function( data ) {
+		for ( let i of data[ "friends" ] )
+			$.getJSON( url + "/" + i , function( d ) {
+				makeFriendMarker(d["longitude"], d["latitude"]);
+			})
+	})
+
 }
+
+//
