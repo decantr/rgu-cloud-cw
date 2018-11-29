@@ -4,7 +4,8 @@ var openWeatherAPIKey = "4cfa266fa9af1befdf750a15183feab6";
 var url = "api/city";
 var map;
 
-const CURRENTLYLOGGEDINUSER = "jeffrey"
+var main;
+var CURRENTLYLOGGEDINUSER = ""
 
 //the document ready function
 try {
@@ -17,6 +18,22 @@ try {
 // Initialise page.
 //
 function init() {
+	$("#main").hide()
+	//make dialog box
+	$("#loginDialog").dialog({
+		modal: true,			//modal dialog to disable parent when dialog is active
+		autoOpen: true,		//set autoOpen to false, hidding dialog after creation
+		title: "Login"	//set title of dialog box
+	}
+	);
+	//set click handler of Add City button
+	$("#login").click(function () {
+		login($("#username").val());
+	}
+	);
+}
+
+function main(){
 	map = makeMap("map", 1, 0.0, 0.0);	//make map using Leaflet or GoogleMap API
 	var marker = makeMarker(map, 0.0, 0.0);	//make and put marker on map, keeping reference
 
@@ -48,7 +65,7 @@ function init() {
 	);
 
 	$("#addFriendDialog").click(function () {
-		$("#username").val("");					//clear city name text input
+		$("#friendName").val("");					//clear city name text input
 		$("#friendAddDialog").dialog("open", true);	//open dialog box
 	}
 	);
@@ -106,7 +123,6 @@ function init() {
 		title: "Send Friend Request"
 	})
 
-	getFriends(CURRENTLYLOGGEDINUSER)
 	populateCities();	//populate list of known cities
 }
 
@@ -281,20 +297,39 @@ function makeFriendMarker(longitude, latitude) {
 
 // }
 
+
+
+
+function login(username){
+	$.getJSON(url + "/" + username, function (data) {
+		if (data != null && data.name == username ) {
+			$("#loginDialog").dialog("close")
+			$("#main").show()
+			CURRENTLYLOGGEDINUSER = username
+			getFriends(CURRENTLYLOGGEDINUSER)
+			main()
+		} else {
+			reportToUser("Failed", "not a valid user")
+		}
+	})
+}
+
+
 // push to the dummy dialog
 function reportToUser(title, text) {
-	$("#cityDetails").dialog({
+	$("#errorDialog").dialog({
 		modal: true,
 		autoOpen: false,
 		title: title
 	}).val(text)
+	$("#errorDialog").dialog("open")
 }
 
 // get all of a users friends as friend objects
 function getFriends(currentUser) {
 
 	$.getJSON(url + "/" + currentUser, function (data) {
-		for (let i of data["friends"])
+		for (let i of data.friends)
 			$.getJSON(url + "/" + i, function (d) {
 				makeFriendMarker(d["longitude"], d["latitude"]);
 			})

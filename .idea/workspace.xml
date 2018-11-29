@@ -54,12 +54,13 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/cm4108/lab06/city/resource/CityResource.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="399">
-              <caret line="86" column="87" selection-start-line="86" selection-start-column="87" selection-end-line="86" selection-end-column="87" />
+            <state relative-caret-position="516">
+              <caret line="86" column="88" lean-forward="true" selection-start-line="86" selection-start-column="88" selection-end-line="86" selection-end-column="88" />
               <folding>
                 <element signature="e#330#360#0" expanded="true" />
                 <element signature="e#1432#1433#0" expanded="true" />
                 <element signature="e#1476#1477#0" expanded="true" />
+                <element signature="e#4410#4411#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -68,11 +69,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/WebContent/script/index.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="282">
-              <caret line="293" column="34" lean-forward="true" selection-start-line="293" selection-start-column="34" selection-end-line="293" selection-end-column="34" />
-              <folding>
-                <element signature="e#9#15#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="259">
+              <caret line="328" column="34" lean-forward="true" selection-start-line="328" selection-start-column="34" selection-end-line="328" selection-end-column="34" />
             </state>
           </provider>
         </entry>
@@ -224,7 +222,7 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="9040000" />
+    <option name="totallyTimeSpent" value="9765000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="-31" width="1920" height="1065" extended-state="6" />
@@ -272,11 +270,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/WebContent/script/index.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="282">
-          <caret line="293" column="34" lean-forward="true" selection-start-line="293" selection-start-column="34" selection-end-line="293" selection-end-column="34" />
-          <folding>
-            <element signature="e#9#15#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="259">
+          <caret line="328" column="34" lean-forward="true" selection-start-line="328" selection-start-column="34" selection-end-line="328" selection-end-column="34" />
         </state>
       </provider>
     </entry>
@@ -320,12 +315,13 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/cm4108/lab06/city/resource/CityResource.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="399">
-          <caret line="86" column="87" selection-start-line="86" selection-start-column="87" selection-end-line="86" selection-end-column="87" />
+        <state relative-caret-position="516">
+          <caret line="86" column="88" lean-forward="true" selection-start-line="86" selection-start-column="88" selection-end-line="86" selection-end-column="88" />
           <folding>
             <element signature="e#330#360#0" expanded="true" />
             <element signature="e#1432#1433#0" expanded="true" />
             <element signature="e#1476#1477#0" expanded="true" />
+            <element signature="e#4410#4411#0" expanded="true" />
           </folding>
         </state>
       </provider>

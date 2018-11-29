@@ -84,11 +84,15 @@ public Response newFriendRequest ( @PathParam ( "name" ) String name , @PathPara
 		sender.sendRequest( newFriend );
 		receiver.receiveRequest( name );
 
-		if ( checkExists( sender , receiver )) return Response.status( 400 ).entity( "User " + newFriend + " is already your friend" ).build();
+		if ( ! sender.getName().equals( name ) || ! receiver.getName().equals( newFriend ) )
+			return Response.status( 400 ).entity( "User" + newFriend + " does not exist" ).build();
 
-		if ( ! sender.getName().equals( name ) || ! receiver.getName().equals( newFriend ) ) {
-			return Response.status( 400 ).entity( "User" + newFriend + " Does Not Exist" ).build();
-		}
+		if ( isFriend( sender , receiver ))
+			return Response.status( 400 ).entity( "User " + newFriend + " is already your friend" ).build();
+
+		if ( isFriend( sender , receiver ))
+			return Response.status( 400 ).entity( "User " + newFriend + " has your request" ).build();
+
 		mapper.save( sender );
 		mapper.save( receiver );
 
@@ -146,10 +150,12 @@ public Response deleteOneCity ( @PathParam ( "name" ) String name ) {
 
 
 
-public boolean checkExists( City sender , City receiver) {
-	return
-		receiver.getFriends().contains( sender.getName() ) ||
-		receiver.getReceivedRequests().contains( sender.getName() );
+public boolean isRequested( City sender , City receiver) {
+	return receiver.getReceivedRequests().contains( sender.getName() );
+}
+
+public boolean isFriend( City sender , City receiver) {
+	return receiver.getFriends().contains( sender.getName() );
 }
 
 }
