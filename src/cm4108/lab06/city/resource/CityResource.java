@@ -21,7 +21,7 @@ import cm4108.lab06.config.*;
 @Path ( "/city" )
 public class CityResource {
 
-	// new city
+// new city
 @POST
 @Produces ( MediaType.TEXT_PLAIN )
 public Response addACity (
@@ -45,7 +45,7 @@ public Response addACity (
 	}
 }
 
-private City getCity(String name) {
+private City getCity ( String name ) {
 	DynamoDBMapper mapper = DynamoDBUtil.getDBMapper( Config.REGION , Config.LOCAL_ENDPOINT );
 	return mapper.load( City.class , name );
 }
@@ -81,44 +81,34 @@ public Response newFriendRequest ( @PathParam ( "name" ) String name , @PathPara
 		City sender = getCity( name , mapper );
 		City receiver = getCity( newFriend , mapper );
 
-		sender.sendRequest( newFriend );
-		receiver.receiveRequest( name );
+		Response r = null;
 
 		if ( ! sender.getName().equals( name ) || ! receiver.getName().equals( newFriend ) )
 			return Response.status( 400 ).entity( "User" + newFriend + " does not exist" ).build();
 
-		if ( isFriend( sender , receiver ))
+		if ( isFriend( sender , receiver ) )
 			return Response.status( 400 ).entity( "User " + newFriend + " is already your friend" ).build();
 
-		if ( isFriend( sender , receiver ))
-			return Response.status( 400 ).entity( "User " + newFriend + " has your request" ).build();
+		if ( isRequested( sender , receiver ) )
+			return Response.status( 300 ).entity( "User " + newFriend + " already has your friend requests" ).build();
+
+		if ( hasSent( sender , receiver )) {
+			acceptFriendRequest( sender , receiver );
+			r = Response.status( 200 ).entity( "User " + newFriend + " is now your friend" ).build();
+		} else {
+			sender.sendRequest( newFriend );
+			receiver.receiveRequest( name );
+		}
 
 		mapper.save( sender );
 		mapper.save( receiver );
 
-		return Response.status( 200 ).entity( "request to " + newFriend + " sent" ).build();
+		return r == null ? Response.status( 200 ).entity( "request to " + newFriend + " sent" ).build() : r;
 	} catch ( Exception e ) {
 		return Response.status( 500 ).entity( "Error adding user" ).build();
 	}
 
 }
-
-
-@Path ( "/{name}/accept/{newFriend}" )
-@POST
-@Produces ( MediaType.APPLICATION_JSON )
-public Response newFriend ( @PathParam ( "name" ) String name , @PathParam ( "newFriend" ) String newFriend ) {
-
-	DynamoDBMapper mapper = DynamoDBUtil.getDBMapper( Config.REGION , Config.LOCAL_ENDPOINT );
-	City city = getCity( name , mapper );
-
-	city.addFriend( newFriend );
-	mapper.save( city );
-
-	return Response.status( 200 ).entity( name + "'s friend " + newFriend + " added" ).build();
-
-}
-
 
 // get all cities from db
 @GET
@@ -139,7 +129,7 @@ public Collection < City > getAllCities () {
 @DELETE
 public Response deleteOneCity ( @PathParam ( "name" ) String name ) {
 	DynamoDBMapper mapper = DynamoDBUtil.getDBMapper( Config.REGION , Config.LOCAL_ENDPOINT );
-	City city = getCity( name, mapper );
+	City city = getCity( name , mapper );
 
 	if ( city == null )
 		throw new WebApplicationException( 404 );
@@ -149,13 +139,26 @@ public Response deleteOneCity ( @PathParam ( "name" ) String name ) {
 }
 
 
-
-public boolean isRequested( City sender , City receiver) {
+private boolean isRequested ( City sender , City receiver ) {
 	return receiver.getReceivedRequests().contains( sender.getName() );
 }
 
-public boolean isFriend( City sender , City receiver) {
+private boolean hasSent ( City sender , City receiver ) {
+	return receiver.getSentRequests().contains( sender.getName() );
+}
+
+private boolean isFriend ( City sender , City receiver ) {
 	return receiver.getFriends().contains( sender.getName() );
+}
+
+private void acceptFriendRequest ( City sender , City receiver ) {
+	receiver.getSentRequests().remove( sender.getName() );
+	sender.getReceivedRequests().remove( receiver.getName() );
+
+	System.out.println("ARGH");
+
+	sender.addFriend( receiver.getName() );
+	receiver.addFriend( sender.getName() );
 }
 
 }

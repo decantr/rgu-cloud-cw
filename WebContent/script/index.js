@@ -124,16 +124,8 @@ function main(){
 	})
 
 	populateCities();	//populate list of known cities
+	getFriendRequests()
 }
-
-
-function addFriend() {
-	console.log($("#username").val())
-	$.post(url + "/jeffrey/" + $("#username").val(), function () {
-		console.log("success")
-	})
-} //end function
-
 
 //
 // save a city using the City service, given its position
@@ -317,12 +309,12 @@ function login(username){
 
 // push to the dummy dialog
 function reportToUser(title, text) {
-	$("#errorDialog").dialog({
+	$("#dummyDialog").dialog({
 		modal: true,
 		autoOpen: false,
 		title: title
 	}).val(text)
-	$("#errorDialog").dialog("open")
+	$("#dummyDialog").dialog("open")
 }
 
 // get all of a users friends as friend objects
@@ -342,11 +334,63 @@ function sendFriendRequest( currentUser , otherUser ) {
 
 	let end = url + "/" + currentUser + "/" + otherUser
 
-	console.log(currentUser, otherUser)
+	console.log(currentUser + " and " + otherUser)
 
 	$.post( end, function ( d ) {
 		console.log(d)
 		reportToUser("Success", "Friend request sent")
 	})
 
+}
+
+// get friend requests
+function getFriendRequests ( ) {
+	let end = url + "/" + CURRENTLYLOGGEDINUSER
+	let requets = []
+
+	console.log(end)
+
+	$.get( end , function ( data ) {
+		console.log(data.receivedRequests)
+		for ( let i of data.receivedRequests ) {
+			console.log(i)
+			let c = "<li id='" + i + "'>" + i + "</li>";
+			$("#requests").append(c)
+			requets.push(i)
+			$("#requests li").click(function () {
+				requestClicked($(this).attr("id"));
+			})
+		}
+	})
+}
+
+
+function acceptFriend( friendName ) {
+	$.post(url + "/" + CURRENTLYLOGGEDINUSER +"/" + friendName, function () {
+		console.log("success")
+	})
+}
+
+function removeFriend(friendName) {
+	console.log("this definetly works")
+}
+
+function requestClicked(friendName) {
+	$(function() {
+    $( "#dummyDialog" ).dialog({
+			resizable: false,
+			title: "Accept friend request",
+      modal: true,
+      buttons: {
+        "Accept": function() {
+					acceptFriend(friendName);
+					$( "#dummyDialog" ).dialog("close")
+        },
+        "Deny": function() {
+					removeFriend(friendName);
+					$( "#dummyDialog" ).dialog("close")
+        }
+      }
+    });
+  });
 }

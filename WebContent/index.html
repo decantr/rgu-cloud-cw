@@ -24,15 +24,15 @@
 
 <body>
 	<section id="main">
-		<!-- The list of known cities -->
 		<section>
-			<h1>List of Cities</h1>
-			<!-- Initially the list is empty. We will construct it using Ajax. -->
-			<ul id="cities">
+			<h1>List of Friends</h1>
+			<ul id="friends">
+			</ul>
+			<h1>List of Requests</h1>
+			<ul id="requests">
 			</ul>
 			<button id="openFriendRequestDialog">Send Friend Request</button>
 
-			<!-- Section for entering details of a new city. -->
 			<section id="friendRequestDialog">
 				<section>
 					Friend Name:
@@ -43,73 +43,39 @@
 					<button id="cancelRequest">Cancel</button>
 				</section>
 			</section>
-
-
-			<button id="addFriendDialog">Add Friend</button>
-
-			<!-- Section for entering details of a new city. -->
-			<section id="friendAddDialog">
-				<section>
-					Friends Name:
-					<input type="text" id="friendName">
-				</section>
-				<section>
-					<button id="addFriend">Save City</button>
-					<button id="cancelFriend">Cancel</button>
-				</section>
-			</section>
-
-			<!-- Buttons for adding and deleting a city. -->
-			<button id="addCity">Add City</button>
-			<button id="deleteCity">Delete Selected</button>
 		</section>
 
-		<!-- Section for entering details of a new city. -->
-		<section id="cityDetails">
+		<section id="newUserDetails">
 			<section>
-				City Name:
-				<input type="text" id="cityName">
+				User Name:
+				<input type="text" id="newUserName">
 			</section>
 
-			<!-- Buttons for saving/cancelling. -->
 			<section>
-				<button id="saveCity">Save City</button>
-				<button id="cancelCity">Cancel</button>
+				<button id="saveNewUser">Save User</button>
+				<button id="cancelNewUser">Cancel</button>
 			</section>
 		</section>
 
-		<!--  Section showing weather of the selected city. -->
-		<section id="cityWeather">
-			<!-- Name of city. Empty for the moment. Will be populated by JS. -->
-			<h1></h1>
-
-			<!-- Weather icon image. Will be populated by JS. -->
-			<img>
-			Temperature:
-
-			<!-- Temperature span. Will be populated by JS. -->
-			<span>---</span>
-		</section>
-
-		<!-- Section for showing Google Map. Empty for the moment. It will be populated by JS. -->
 		<section id="map"></section>
 
-		<button id="test">test</button>
+		<button id="refresh">Refresh</button>
 	</section>
 
 	<!-- login box -->
 	<section id="loginDialog">
 		<section>
 			Username
-			<input type="text" id="username">
+			<input type="text" id="loginUsername">
 		</section>
 		<section>
 			<button id="login">login</button>
+			<button id="newUser">new user</button>
 		</section>
 	</section>
 
 	<!-- dummy error box -->
-	<div id="errorDialog">
+	<div id="dummyDialog">
 		<p></p>
 	</div>
 </body>

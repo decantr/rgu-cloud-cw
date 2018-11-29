@@ -68,7 +68,7 @@ public void addFriend ( String name ) {
 
 @DynamoDBAttribute ( attributeName = "sentRequests" )
 public List < String > getSentRequests () {
-	return sentRequests;
+	return this.sentRequests;
 }
 
 public void setSentRequests ( List < String > sentRequests ) {
@@ -81,7 +81,7 @@ public void sendRequest ( String name ) {
 
 @DynamoDBAttribute ( attributeName = "receivedRequests" )
 public List < String > getReceivedRequests () {
-	return receivedRequests;
+	return this.receivedRequests;
 }
 
 public void setReceivedRequests ( List < String > receivedRequests ) {
