@@ -4,6 +4,8 @@ var openWeatherAPIKey = "4cfa266fa9af1befdf750a15183feab6";
 var url = "api/city";
 var map;
 
+const CURRENTLYLOGGEDINUSER = "jeffrey"
+
 //the document ready function
 try {
 	$(function () { init(); });
@@ -51,12 +53,12 @@ function init() {
 	}
 	);
 
-		//set click handler of Save City button in Add City dialog
-		$("#addFriend").click(function () {
-			addFriend();
-			$("#friendAddDialog").dialog("close");
-		}
-		);
+	//set click handler of Save City button in Add City dialog
+	$("#addFriend").click(function () {
+		addFriend();
+		$("#friendAddDialog").dialog("close");
+	}
+	);
 
 	//set click handler of Cancel button in Add City dialog
 	$("#cancelCity").click(function () {
@@ -81,18 +83,39 @@ function init() {
 	});
 
 	$("#test").click(function () {
-		getFriends("jeffrey")
+		getFriends(CURRENTLYLOGGEDINUSER)
 	})
 
+	$("#openFriendRequestDialog").click(function () {
+		$("#friendRequestDialog").dialog("open", true)
+	});
+
+	$("#sendRequest").click(function () {
+		sendFriendRequest(CURRENTLYLOGGEDINUSER, $("#friendName").val())
+		$("#friendRequestDialog").dialog("close")
+	});
+
+	$("#cancelRequest").click(function () {
+		$("#friendName").val("")
+		$("#friendRequestDialog").dialog("close");
+	});
+
+	$("#friendRequestDialog").dialog({
+		modal: true,
+		autoOpen: false,
+		title: "Send Friend Request"
+	})
+
+	getFriends(CURRENTLYLOGGEDINUSER)
 	populateCities();	//populate list of known cities
 }
 
 
 function addFriend() {
-	console.log( $("#username").val() )
-	$.post( url + "/jeffrey/" + $("#username").val(), function() {
+	console.log($("#username").val())
+	$.post(url + "/jeffrey/" + $("#username").val(), function () {
 		console.log("success")
-	} )
+	})
 } //end function
 
 
@@ -258,16 +281,37 @@ function makeFriendMarker(longitude, latitude) {
 
 // }
 
-// get all of a users friends as friend objects
-function getFriends( username ) {
+// push to the dummy dialog
+function reportToUser(title, text) {
+	$("#cityDetails").dialog({
+		modal: true,
+		autoOpen: false,
+		title: title
+	}).val(text)
+}
 
-	$.getJSON( url + "/" + username , function( data ) {
-		for ( let i of data[ "friends" ] )
-			$.getJSON( url + "/" + i , function( d ) {
+// get all of a users friends as friend objects
+function getFriends(currentUser) {
+
+	$.getJSON(url + "/" + currentUser, function (data) {
+		for (let i of data["friends"])
+			$.getJSON(url + "/" + i, function (d) {
 				makeFriendMarker(d["longitude"], d["latitude"]);
 			})
 	})
 
 }
 
-//
+// send a friend request
+function sendFriendRequest( currentUser , otherUser ) {
+
+	let end = url + "/" + currentUser + "/" + otherUser
+
+	console.log(currentUser, otherUser)
+
+	$.post( end, function ( d ) {
+		console.log(d)
+		reportToUser("Success", "Friend request sent")
+	})
+
+}

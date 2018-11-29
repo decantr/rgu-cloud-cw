@@ -74,7 +74,34 @@ public City getOneCity ( @PathParam ( "name" ) String name ) {
 @Path ( "/{name}/{newFriend}" )
 @POST
 @Produces ( MediaType.APPLICATION_JSON )
-public Response getOneCity ( @PathParam ( "name" ) String name , @PathParam ( "newFriend" ) String newFriend ) {
+public Response newFriendRequest ( @PathParam ( "name" ) String name , @PathParam ( "newFriend" ) String newFriend ) {
+
+	try {
+		DynamoDBMapper mapper = DynamoDBUtil.getDBMapper( Config.REGION , Config.LOCAL_ENDPOINT );
+		City sender = getCity( name , mapper );
+		City receiver = getCity( name , mapper );
+
+		sender.sendRequest( newFriend );
+		receiver.receiveRequest( name );
+
+		if ( sender.getName().equals( name ) || receiver.getName().equals( newFriend ) ) {
+			return Response.status( 400 ).entity( "User" + newFriend + " Does Not Exist" ).build();
+		}
+		mapper.save( sender );
+		mapper.save( receiver );
+
+		return Response.status( 200 ).entity( "request to " + newFriend + " sent" ).build();
+	} catch ( Exception e ) {
+		return Response.status( 500 ).entity( "Error adding user" ).build();
+	}
+
+}
+
+
+@Path ( "/{name}/accept/{newFriend}" )
+@POST
+@Produces ( MediaType.APPLICATION_JSON )
+public Response newFriend ( @PathParam ( "name" ) String name , @PathParam ( "newFriend" ) String newFriend ) {
 
 	DynamoDBMapper mapper = DynamoDBUtil.getDBMapper( Config.REGION , Config.LOCAL_ENDPOINT );
 	City city = getCity( name , mapper );

@@ -29,6 +29,20 @@
 		<!-- Initially the list is empty. We will construct it using Ajax. -->
 		<ul id="cities">
 		</ul>
+		<button id="openFriendRequestDialog">Send Friend Request</button>
+
+		<!-- Section for entering details of a new city. -->
+		<section id="friendRequestDialog">
+			<section>
+				Friend Name:
+				<input type="text" id="friendName">
+			</section>
+			<section>
+				<button id="sendRequest">Save City</button>
+				<button id="cancelRequest">Cancel</button>
+			</section>
+		</section>
+
 
 		<button id="addFriendDialog">Add Friend</button>
 
@@ -80,6 +94,11 @@
 	<section id="map"></section>
 
 	<button id="test">test</button>
+
+	<!-- dummy error box -->
+	<div id="errorDialog">
+		<p></p>
+	</div>
 
 </body>
 
