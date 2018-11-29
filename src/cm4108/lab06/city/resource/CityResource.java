@@ -24,10 +24,11 @@ public class CityResource
 @Produces(MediaType.TEXT_PLAIN)
 public Response addACity(	@FormParam("name") String name,
 							@FormParam("longitude") double longitude,
-							@FormParam("latitude") double latitude)
+							@FormParam("latitude") double latitude,
+							@FormParam("friends") List<String> friends)
 {
 try	{
-	City city=new City(name,longitude,latitude);
+	City city=new City(name,longitude,latitude,friends);
 	
 	DynamoDBMapper mapper=DynamoDBUtil.getDBMapper(Config.REGION,Config.LOCAL_ENDPOINT);
 	mapper.save(city);
@@ -51,6 +52,21 @@ if (city==null)
 
 return city;
 } //end method
+
+@Path("/{name}/{newFriend}")
+@POST
+@Produces(MediaType.APPLICATION_JSON)
+public Response getOneCity(@PathParam("name") String name, @PathParam("newFriend") String newFriend)
+{
+	DynamoDBMapper mapper=DynamoDBUtil.getDBMapper(Config.REGION,Config.LOCAL_ENDPOINT);
+	City city=mapper.load(City.class,name);
+
+	city.addFriend( newFriend );
+	mapper.save(city);
+
+	return Response.status(200).entity(name + "'s friend " + newFriend + " added").build();
+} //end method
+
 
 @GET
 @Produces(MediaType.APPLICATION_JSON)

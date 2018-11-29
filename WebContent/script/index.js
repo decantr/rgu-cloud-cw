@@ -6,7 +6,7 @@ var map;
 
 //the document ready function
 try {
-	$( function () { init(); } );
+	$(function () { init(); });
 } catch (e) {
 	alert("*** jQuery not loaded. ***");
 }
@@ -35,6 +35,29 @@ function init() {
 	}
 	);
 
+	//make dialog box
+	$("#friendAddDialog").dialog({
+		modal: true,
+		autoOpen: false,
+		title: "Add Friend",
+		minWidth: 500,
+		minHeight: 400
+	}
+	);
+
+	$("#addFriendDialog").click(function () {
+		$("#username").val("");					//clear city name text input
+		$("#friendAddDialog").dialog("open", true);	//open dialog box
+	}
+	);
+
+		//set click handler of Save City button in Add City dialog
+		$("#addFriend").click(function () {
+			addFriend();
+			$("#friendAddDialog").dialog("close");
+		}
+		);
+
 	//set click handler of Cancel button in Add City dialog
 	$("#cancelCity").click(function () {
 		$("#cityDetails").dialog("close");
@@ -61,6 +84,15 @@ function init() {
 	populateCities();	//populate list of known cities
 	populateMap();
 }
+
+
+function addFriend() {
+	console.log( $("#username").val() )
+	$.post( url + "/jeffrey/" + $("#username").val(), function() {
+		console.log("success")
+	} )
+} //end function
+
 
 //
 // save a city using the City service, given its position
@@ -210,9 +242,9 @@ function makeMarker(map, longitude, latitude) {
 } //end function
 
 function makeFriendMarker(longitude, latitude) {
-    var marker = L.marker(L.latLng({ lon: longitude, lat: latitude }));
-    marker.addTo(map);
-    return marker;
+	var marker = L.marker(L.latLng({ lon: longitude, lat: latitude }));
+	marker.addTo(map);
+	return marker;
 }
 
 function populateMap() {
