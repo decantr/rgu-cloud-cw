@@ -70,6 +70,28 @@ public City getOneCity ( @PathParam ( "name" ) String name ) {
 
 }
 
+@Path ( "/{name}" )
+@POST
+@Produces ( MediaType.APPLICATION_JSON )
+public Response updateLocation ( @PathParam ( "name" ) String name ,
+																 @FormParam ( "latitude" ) double latitude ,
+																 @FormParam ( "longitude" ) double longitude ) {
+	try {
+		DynamoDBMapper mapper = DynamoDBUtil.getDBMapper( Config.REGION , Config.LOCAL_ENDPOINT );
+		City sender = getCity( name , mapper );
+
+		sender.setLatitude( latitude );
+		sender.setLongitude( longitude );
+
+		mapper.save( sender );
+
+		return Response.status( 201 ).entity( "Success" ).build();
+	} catch ( NumberFormatException e ) {
+		return Response.status( 400 ).entity( "Not a Number" ).build();
+	} catch ( Exception e ){
+		return Response.status( 400 ).entity( e.toString() ).build();
+	}
+}
 
 @Path ( "/{name}/{newFriend}" )
 @POST

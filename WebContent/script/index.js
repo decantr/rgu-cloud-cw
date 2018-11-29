@@ -1,6 +1,7 @@
 //API keys
 const mapBoxApiKey = "pk.eyJ1IjoiZGVjYW50ZXIiLCJhIjoiY2pvejF1dndxMmhkczN2a2ZnbzN4N3ZuZCJ9.GmzH8RHzlfz_APpRuIauWA"
 const url = "api/city"
+var friends = []
 var CURRENTUSER;
 var CURRENTUSERMARKER;
 var MAP;
@@ -71,25 +72,31 @@ function main() {
 	CURRENTUSERMARKER = currentLocation()
 
 	$("#refresh").click(function () {
-		getFriends()
+		refresh()
+	})
+
+	$("#updateLocation").click(function () {
+		updateLocation()
+		refresh()
 	})
 
 	getFriends()
 	getFriendRequests()
+	updateLocation()
 }
 
 function createNewUser(username) {
-	let longitude = 57.1497
-	let latitude = 2.0943
+	let latitude = 57.1497
+	let longitude = 2.0943
 
 	let data = {
 		"name": username,
-		"longitude": longitude,
-		"latitude": latitude
+		"latitude": latitude,
+		"longitude": longitude
 	}
 
 	$.post(url, data, function () {
-		alert("User saved: " + name + " (" + longitude + "," + latitude + ")")
+		alert("User saved: " + name + " (" + latitude + "," + longitude + ")")
 	}
 	)
 }
@@ -97,13 +104,14 @@ function createNewUser(username) {
 function getFriends() {
 
 	$("#listFriends").empty()
+	friends = []
 	for (let i of CURRENTUSER.friends) {
 		$("#listFriends").append("<li id='" + i + "'>" + i + "</li>")
-
+		friends.push(i)
 	}
 
-	$("#cities li").click(function () {
-		cityClicked($(this).attr("id"))
+	$("#listFriends li").click(function () {
+		friendClicked($(this).attr("id"))
 	})
 
 }
@@ -113,7 +121,7 @@ function drawFriends() {
 	$.getJSON(url + "/" + CURRENTUSER.name, function (data) {
 		for (let i of data.friends)
 			$.getJSON(url + "/" + i, function (d) {
-				makeFriendMarker(d["longitude"], d["latitude"])
+				makeFriendMarker(d["latitude"], d["longitude"])
 			})
 	})
 
@@ -127,10 +135,10 @@ function friendClicked(id) {
 	let urlname = url + "/" + name
 
 	$.getJSON(urlname, function (data) {
-		longitude = data.longitude
 		latitude = data.latitude
+		longitude = data.longitude
 
-		$("#friendInformation h1").html(data.name + "\n\tlon: " + longitude + " lat: " + latitude)
+		$("#friendInformation h1").html(data.name + "\n\t lat: " + latitude + "lon: " + longitude)
 	}
 	)
 }
@@ -142,8 +150,8 @@ function deleteCity(name) {
 	$.ajax(urlname, settings)
 }
 
-function makeMap(divId, zoomLevel, longitude, latitude) {
-	let location = L.latLng(longitude, latitude)
+function makeMap(divId, zoomLevel, latitude, longitude) {
+	let location = L.latLng(latitude, longitude)
 	let tempMap = L.map(divId).setView(location, zoomLevel)
 	L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=' + mapBoxApiKey,
 		{
@@ -157,14 +165,20 @@ function makeMap(divId, zoomLevel, longitude, latitude) {
 }
 
 function currentLocation() {
-	let location = L.latLng({ lon: CURRENTUSER.longitude, lat: CURRENTUSER.latitude })
-	let marker = L.marker(location, { draggable: true })
-	marker.addTo(MAP)
-	return marker
+	let location = L.latLng({ lat: CURRENTUSER.latitude, lon: CURRENTUSER.longitude })
+	if (CURRENTUSERMARKER) {
+		CURRENTUSERMARKER.getLatLng.lat = CURRENTUSER.latitude;
+		CURRENTUSERMARKER.getLatLng.lng = CURRENTUSER.longitude;
+		return CURRENTUSERMARKER
+	} else {
+		marker = L.marker(location, { draggable: true })
+		marker.addTo(MAP)
+		return marker
+	}
 }
 
-function makeFriendMarker(longitude, latitude) {
-	let marker = L.marker(L.latLng({ lon: longitude, lat: latitude }))
+function makeFriendMarker(latitude, longitude) {
+	let marker = L.marker(L.latLng({ lat: latitude, lon: longitude }))
 	marker.addTo(MAP)
 }
 
@@ -252,7 +266,38 @@ function requestClicked(friendName) {
 }
 
 // update CURRENTUSER location
-function updateLocation () {
-	$("currentLongitude").val(CURRENTUSERMARKER.location)
-	$("currentLatitude").val(CURRENTUSERMARKER)
+function updateLocation() {
+	let data = {
+		"latitude": CURRENTUSERMARKER.getLatLng().lat,
+		"longitude": CURRENTUSERMARKER.getLatLng().lng
+	}
+
+	$.ajax(url + "/" + CURRENTUSER.name, {
+		type: "POST",
+		data: data,
+		statusCode: {
+			201: function (response) {
+				$("#currentLatitude").val(data.latitude)
+				$("#currentLongitude").val(data.longitude)
+			},
+			400: function (response) {
+				alert("Oops, something went wrong");
+				$("#currentLatitude").val(CURRENTUSER.latitude)
+				$("#currentLongitude").val(CURRENTUSER.longitude)
+			}
+		}
+	});
+	console.log(d)
+
 }
+
+function refresh() {
+	$.getJSON(url + "/" + CURRENTUSER.name, function (data) {
+		if (data != null && data.name == CURRENTUSER.name)
+			CURRENTUSER = data
+	})
+	getFriends()
+	getFriendRequests()
+	updateLocation()
+}
+
