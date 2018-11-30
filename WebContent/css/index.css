@@ -1,7 +1,10 @@
-body
-{
+body {
 font-family: Arial;
 font-size: 16pt;
+}
+
+h3 {
+	margin-top: 0;
 }
 
 #cityDetails
@@ -16,22 +19,57 @@ padding: 5px;
 
 #map
 {
-width: 640px;
-height: 480px;
-}
-
-.selected
-{
-color: #ff0000;
-font-weight: bold;
-}
-
-img
-{
-vertical-align: middle;
+	width: 640px;
+	height: 480px;
+	float: left;
+	margin-bottom: 1em;
 }
 
 .small {
 	font-size: 10pt;
 	display: inline;
+	margin-left: 2em;
+}
+
+.latlong {
+	text-align: center;
+}
+
+#main {
+	margin: 30px;
+	align-content: center;
+	width: 60%;
+	height: 40%;
+	display: flex;
+}
+
+#leftpane {
+	width: 640px;
+}
+
+#rightpane {
+	position: relative;
+	margin-right: 1em;
+	width: 320px;
+	float: left;
+}
+
+.buttons {
+	position:absolute;
+	bottom:40px;
+	margin-left: 20px;
+	text-align: center;
+	width: 100%;
+}
+
+.friendsLists {
+	margin-left: 20px;
+}
+
+.friendsLists ul {
+	overflow:hidden;
+	overflow-y:scroll;
+	height: 140px;
+	list-style: none;
+	white-space:nowrap;
 }

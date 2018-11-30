@@ -23,61 +23,68 @@
 </head>
 
 <body>
-	<section id="main">
-		<section>
-			<div>
-				<p>
-					lat:<input id="currentLatitude" type="text">° long:<input id="currentLongitude" type="text"> °
-				</p>
+	<div id="main">
+
+		<div id="leftpane">
+			<section id="map"></section>
+			<div class="latlong">
+				<span>
+					lat:<input id="currentLatitude" type="text" readonly> long:<input id="currentLongitude" type="text" readonly>
+				</span>
 				<button id="updateLocation">Check In</button>
 			</div>
-			<h1>List of Friends</h1>
-			<ul id="listFriends">
-			</ul>
-			<h1>List of Requests</h1>
-			<ul id="listRequests">
-			</ul>
-			<button id="friendRequestDialogOpen">Send Friend Request</button>
-
-			<section id="friendRequestDialog">
-				<section>
-					Friend Name:
-					<input type="text" id="friendRequestUsername">
-				</section>
-				<section>
-					<button id="friendRequestSend">Send Request</button>
-					<button id="friendRequestCancel">Cancel</button>
-				</section>
-			</section>
-		</section>
-
-		<section id="newUserDetails">
-			<section>
-				User Name:
-				<input type="text" id="newUserUsername">
-			</section>
-
-			<section>
-				<button id="newUserAddButton">Save User</button>
-				<button id="newUserCancelButton">Cancel</button>
-			</section>
-		</section>
-
-		<section id="map"></section>
-
-		<button id="refresh">Refresh</button>
-
-		<!-- dummy confirm box -->
-		<div id="dummyDialogConfirm">
-			<p></p>
 		</div>
+		<div id="rightpane">
+				<div class="friendsLists">
+					<h3>List of Friends</h3>
+					<ul id="listFriends">
+					</ul>
+					<h3>List of Requests</h3>
+					<ul id="listRequests">
+					</ul>
+				</div>
+			<div class="buttons">
+				<button id="friendRequestDialogOpen">Send Friend Request</button>
+				<button id="refresh">Refresh</button>
+			</div>
+		</div>
+
+	</div>
+
+	<section id="newUserDetails">
+		<section>
+			User Name:
+			<input type="text" id="newUserUsername">
+		</section>
+
+		<section>
+			<button id="newUserAddButton">Save User</button>
+			<button id="newUserCancelButton">Cancel</button>
+		</section>
 	</section>
 
-			<!-- dummy error box -->
-			<div id="dummyDialog">
-				<p id="dummyText"></p>
-			</div>
+	<section id="friendRequestDialog">
+		<section>
+			Friend Name:
+			<input type="text" id="friendRequestUsername">
 		</section>
+		<section>
+			<button id="friendRequestSend">Send Request</button>
+			<button id="friendRequestCancel">Cancel</button>
+		</section>
+	</section>
+
+	<!-- dummy confirm box -->
+	<div id="dummyDialogConfirm">
+		<p></p>
+	</div>
+	</section>
+
+	<!-- dummy error box -->
+	<div id="dummyDialog">
+		<p id="dummyText"></p>
+	</div>
+	</section>
 
 	<!-- login box -->
 	<section id="loginDialog">
