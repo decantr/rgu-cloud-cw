@@ -1,6 +1,6 @@
 //API keys
 const mapBoxApiKey = "pk.eyJ1IjoiZGVjYW50ZXIiLCJhIjoiY2pvejF1dndxMmhkczN2a2ZnbzN4N3ZuZCJ9.GmzH8RHzlfz_APpRuIauWA"
-const url = "api/city"
+const url = "api/user"
 var FRIENDMARKERS = []
 var CURRENTUSER;
 var CURRENTUSERMARKER;

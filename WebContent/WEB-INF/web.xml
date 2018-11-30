@@ -8,8 +8,8 @@
     <init-param>
       <param-name>jersey.config.server.provider.packages</param-name>
       <param-value>
-      	cm4108.lab06.city.resource
-      	com.fasterxml.jackson.jaxrs.json
+        cm4108.user.resource
+        com.fasterxml.jackson.jaxrs.json
       </param-value>
     </init-param>
     <load-on-startup>1</load-on-startup>
