@@ -112,7 +112,7 @@ public Response newFriendRequest(@PathParam( "name" ) String name , @PathParam( 
 
 		if ( hasSent(sender , receiver) ) {
 			acceptFriendRequest(sender , receiver);
-			r = Response.status(201).entity("User " + newFriend + " is now your friend").build();
+			r = Response.status(200).entity("User " + newFriend + " is now your friend").build();
 		} else {
 			sender.sendRequest(newFriend);
 			receiver.receiveRequest(name);
@@ -121,7 +121,7 @@ public Response newFriendRequest(@PathParam( "name" ) String name , @PathParam( 
 		mapper.save(sender);
 		mapper.save(receiver);
 
-		return r == null ? Response.status(200).entity("request to " + newFriend + " sent").build() : r;
+		return r == null ? Response.status(201).entity("request to " + newFriend + " sent").build() : r;
 	} catch ( Exception e ) {
 		return Response.status(500).entity("Error adding user").build();
 	}
@@ -131,12 +131,15 @@ public Response newFriendRequest(@PathParam( "name" ) String name , @PathParam( 
 // get all cities from db
 @GET
 @Produces( MediaType.APPLICATION_JSON )
-public Collection < User > getAllCities() {
+public Collection < User > getAllUsers() {
 
 	DynamoDBMapper mapper = DynamoDBUtil.getDBMapper(Config.REGION , Config.LOCAL_ENDPOINT);
 	DynamoDBScanExpression scanExpression = new DynamoDBScanExpression();
 	List < User > result = mapper.scan(User.class , scanExpression);
 
+	if ( result == null )
+		throw new WebApplicationException(404);
+		
 	return result;
 
 }
@@ -145,26 +148,29 @@ public Collection < User > getAllCities() {
 // cancel a friend request
 @Path( "/{name}/{newFriend}" )
 @DELETE
-public Response deleteOneUser(
+public Response cancelRequest(
 	@PathParam( "name" ) String name ,
 	@PathParam( "newFriend" ) String newFriend) {
+    try {
+        DynamoDBMapper mapper = DynamoDBUtil.getDBMapper(Config.REGION , Config.LOCAL_ENDPOINT);
+        User sender = mapper.load(User.class , name);
+        User receiver = mapper.load(User.class , newFriend);
 
-	DynamoDBMapper mapper = DynamoDBUtil.getDBMapper(Config.REGION , Config.LOCAL_ENDPOINT);
-	User sender = mapper.load(User.class , name);
-	User receiver = mapper.load(User.class , newFriend);
+        if ( isFriend(sender , receiver) )
+            return Response.status(403).entity("User " + newFriend + " is already your friend").build();
 
-	if ( isFriend(sender , receiver) )
-		return Response.status(403).entity("User " + newFriend + " is already your friend").build();
+        if ( ! isRequested(receiver , sender) )
+            return Response.status(404).entity("User " + newFriend + " does not have a friend request from you ").build();
 
-	if ( ! isRequested(receiver , sender) )
-		return Response.status(404).entity("User " + newFriend + " does not have a friend request from you ").build();
+        removeFriendRequest(sender , receiver);
 
-	removeFriendRequest(sender , receiver);
+        mapper.save(sender);
+        mapper.save(receiver);
 
-	mapper.save(sender);
-	mapper.save(receiver);
-
-	return Response.status(200).entity("friend request removed").build();
+        return Response.status(200).entity("friend request removed").build();
+	} catch ( Exception e ) {
+        return Response.status(500).entity("Internal Server Error").build();
+	}
 }
 
 

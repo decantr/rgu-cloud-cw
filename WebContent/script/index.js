@@ -198,11 +198,12 @@ function updateLocation() {
 
 	$.post(url + "/" + CURRENTUSER.name, data)
 		.done((d) => {
-			if ( d.statusCode == 201) {
+			console.log(d)
+			if ( d.statusCode == 404) {
+				reportToUser(d.statusText, d.responseText)
+			} else {
 				$("#currentLatitude").val(data.latitude)
 				$("#currentLongitude").val(data.longitude)
-			} else {
-				reportToUser(d.statusText, d.responseText)
 			}
 		})
 
@@ -226,7 +227,7 @@ function eventHandlers() {
 	// make login dialog box
 	$("#loginDialog")
 		.dialog({
-			modal: true, autoOpen: true, title: "Login"
+			modal: true, autoOpen: true, title: "Login", minWidth: 300
 		})
 	$("#loginButton")
 		.click(function () {
@@ -249,61 +250,51 @@ function eventHandlers() {
 
 		})
 	// new user handling
-	$("#loginNewUserButton")
-		.click(function () {
+	$("#loginNewUserButton").click(function () {
 			$("#newUserUsername")
 				.val("")
 			$("#newUserDetails")
 				.dialog("open", true)
 		})
-	$("#newUserDetails")
-		.dialog({
+	$("#newUserDetails")	.dialog({
 			modal: true, autoOpen: false, title: "Create New User", minWidth: 500, minHeight: 400
 		})
-	$("#newUserAddButton")
-		.click(function () {
+	$("#newUserAddButton").click(function () {
 			createNewUser($("#newUserUsername")
 				.val())
 			$("#newUserDetails")
 				.dialog("close")
 		})
-	$("#newUserCancelButton")
-		.click(function () {
+	$("#newUserCancelButton").click(function () {
 			$("#newUserDetails")
 				.dialog("close")
 		})
 	// friend request
-	$("#friendRequestDialog")
-		.dialog({
+	$("#friendRequestDialog").dialog({
 			modal: true, autoOpen: false, title: "Send Friend Request"
 		})
-	$("#friendRequestDialogOpen")
-		.click(function () {
+	$("#friendRequestDialogOpen").click(function () {
 			$("#friendRequestDialog")
 				.dialog("open", true)
 		})
-	$("#friendRequestSend")
-		.click(function () {
+	$("#friendRequestSend").click(function () {
 			sendFriendRequest($("#friendRequestUsername")
 				.val())
 			$("#friendRequestDialog")
 				.dialog("close")
 		})
-	$("#friendRequestCancel")
-		.click(function () {
+	$("#friendRequestCancel").click(function () {
 			$("#friendRequestUsername")
 				.val("")
 			$("#friendRequestDialog")
 				.dialog("close")
 		})
 
-	$("#refresh")
-		.click(function () {
+	$("#refresh").click(function () {
 			refresh()
 		})
 
-	$("#updateLocation")
-		.click(function () {
+	$("#updateLocation").click(function () {
 			updateLocation()
 			refresh()
 		})
