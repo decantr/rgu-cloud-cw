@@ -83,13 +83,18 @@ public Response updateLocation ( @PathParam ( "name" ) String name ,
 		sender.setLatitude( latitude );
 		sender.setLongitude( longitude );
 
+		System.out.println(sender.toString());
+
 		mapper.save( sender );
 
 		return Response.status( 201 ).entity( "Success" ).build();
 	} catch ( NumberFormatException e ) {
 		return Response.status( 400 ).entity( "Not a Number" ).build();
+	} catch ( NullPointerException e ) {
+		return Response.status( 404 ).entity( "User not found" ).build();
 	} catch ( Exception e ){
-		return Response.status( 400 ).entity( e.toString() ).build();
+		System.out.println(e.toString());
+		return Response.status( 500 ).entity( e.toString() ).build();
 	}
 }
 
@@ -106,17 +111,17 @@ public Response newFriendRequest ( @PathParam ( "name" ) String name , @PathPara
 		Response r = null;
 
 		if ( ! sender.getName().equals( name ) || ! receiver.getName().equals( newFriend ) )
-			return Response.status( 400 ).entity( "User" + newFriend + " does not exist" ).build();
+			return Response.status( 404 ).entity( "User" + newFriend + " does not exist" ).build();
 
 		if ( isFriend( sender , receiver ) )
-			return Response.status( 400 ).entity( "User " + newFriend + " is already your friend" ).build();
+			return Response.status( 403 ).entity( "User " + newFriend + " is already your friend" ).build();
 
 		if ( isRequested( sender , receiver ) )
-			return Response.status( 300 ).entity( "User " + newFriend + " already has your friend requests" ).build();
+			return Response.status( 403 ).entity( "User " + newFriend + " already has your friend requests" ).build();
 
 		if ( hasSent( sender , receiver )) {
 			acceptFriendRequest( sender , receiver );
-			r = Response.status( 200 ).entity( "User " + newFriend + " is now your friend" ).build();
+			r = Response.status( 201 ).entity( "User " + newFriend + " is now your friend" ).build();
 		} else {
 			sender.sendRequest( newFriend );
 			receiver.receiveRequest( name );
@@ -146,18 +151,29 @@ public Collection < City > getAllCities () {
 }
 
 
-// delete a city
-@Path ( "/{name}" )
+// cancel a friend request
+@Path ( "/{name}/{newFriend}" )
 @DELETE
-public Response deleteOneCity ( @PathParam ( "name" ) String name ) {
+public Response deleteOneCity ( 
+		@PathParam ( "name" ) String name,
+		@PathParam ( "newFriend" ) String newFriend ) {
+	
 	DynamoDBMapper mapper = DynamoDBUtil.getDBMapper( Config.REGION , Config.LOCAL_ENDPOINT );
-	City city = getCity( name , mapper );
+	City sender = getCity( name , mapper );
+	City receiver = getCity( newFriend , mapper );
 
-	if ( city == null )
-		throw new WebApplicationException( 404 );
+	if ( isFriend( sender , receiver ) )
+		return Response.status( 403 ).entity( "User " + newFriend + " is already your friend" ).build();
 
-	mapper.delete( city );
-	return Response.status( 200 ).entity( "deleted" ).build();
+	if ( ! isRequested( receiver , sender ) )
+		return Response.status( 404 ).entity( "User " + newFriend + " does not have a friend request from you " ).build();
+
+	removeFriendRequest(sender , receiver );
+	
+	mapper.save( sender );
+	mapper.save( receiver );
+	
+	return Response.status( 200 ).entity( "friend request removed" ).build();
 }
 
 
@@ -174,13 +190,16 @@ private boolean isFriend ( City sender , City receiver ) {
 }
 
 private void acceptFriendRequest ( City sender , City receiver ) {
-	receiver.getSentRequests().remove( sender.getName() );
-	sender.getReceivedRequests().remove( receiver.getName() );
-
-	System.out.println("ARGH");
+	removeFriendRequest(sender , receiver );
 
 	sender.addFriend( receiver.getName() );
 	receiver.addFriend( sender.getName() );
 }
+
+private void removeFriendRequest ( City sender , City receiver ) {
+	receiver.getSentRequests().remove( sender.getName() );
+	sender.getReceivedRequests().remove( receiver.getName() );
+}
+
 
 }

@@ -18,6 +18,267 @@ try {
 //
 function init() {
 	$("#main").hide()
+	eventHandlers()
+
+}
+
+function createNewUser(username) {
+	let latitude = 57.1497
+	let longitude = 2.0943
+
+	let data = {
+		"name": username,
+		"latitude": latitude,
+		"longitude": longitude
+	}
+
+	$.ajax(url, {
+		type: "POST",
+		data: data,
+		statusCode: {
+			201: function () {
+				alert("User saved: " + name + " (" + latitude + "," + longitude + ")")
+			},
+			400: function () {
+				alert("Not valid coordinates")
+			},
+			500: function (d) {
+				console.log(d)
+				alert("Server Error")
+			}
+		}
+	});
+}
+
+function getFriends() {
+
+	$("#listFriends").empty()
+
+	for (let i of FRIENDMARKERS) MAP.removeLayer(i)
+
+	FRIENDMARKERS = []
+
+	for (let i of CURRENTUSER.friends) {
+
+		$.getJSON(url + "/" + i, function (data) {
+
+			$("#listFriends").append(
+				"<li id='" + data.name + "'>" +
+				data.name + "<p class='small'> lat: " +
+				data.latitude + " long: " + data.longitude +
+				"</p></li>"
+			)
+
+			console.log(data)
+			FRIENDMARKERS.push(makeFriendMarker(data["latitude"], data["longitude"]))
+			// add name to the marker just added to find it later
+			FRIENDMARKERS[FRIENDMARKERS.length - 1].name = data.name
+
+			$("#listFriends li").click(function () {
+
+				// zoom to the marker location
+				console.log(FRIENDMARKERS)
+				let m = FRIENDMARKERS.find(o => o.name == $(this).attr("id"))
+				MAP.setZoom(9);
+				MAP.panTo(m.getLatLng());
+
+			})
+
+		})
+
+	}
+
+}
+
+function deleteCity(name) {
+	let urlname = url + "/" + name
+	let settings = { type: "DELETE" }
+
+	$.ajax(urlname, settings)
+}
+
+function makeMap(divId, zoomLevel, latitude, longitude) {
+
+	let location = L.latLng(latitude, longitude)
+	let tempMap = L.map(divId).setView(location, zoomLevel)
+
+	L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=' + mapBoxApiKey,
+		{
+			attribution: 'Map data &copy <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+			maxZoom: 18,
+			id: 'mapbox.streets',
+			accessToken: mapBoxApiKey
+		}
+	).addTo(tempMap)
+
+	return tempMap
+
+}
+
+function currentLocation() {
+
+	if (CURRENTUSERMARKER) {
+		CURRENTUSERMARKER.getLatLng = { lat: CURRENTUSER.latitude, lon: CURRENTUSER.longitude }
+		return CURRENTUSERMARKER
+	} else {
+		let location = L.latLng({ lat: CURRENTUSER.latitude, lon: CURRENTUSER.longitude })
+		marker = L.marker(location, { draggable: true })
+		marker.addTo(MAP)
+		return marker
+	}
+
+}
+
+function makeFriendMarker(latitude, longitude) {
+
+	let marker = L.marker(L.latLng({ lat: latitude, lon: longitude }))
+	marker.addTo(MAP)
+	return marker
+
+}
+
+// push to the dummy dialog
+function reportToUser(title, text) {
+	$("#dummyDialog").dialog({
+		modal: true,
+		autoOpen: false,
+		title: title
+	})
+	$("#dummyText").val(text)
+	$("#dummyDialog").dialog("open")
+}
+
+
+
+// send a friend request
+function sendFriendRequest(otherUser) {
+
+	$.ajax(url + "/" + CURRENTUSER.name + "/" + otherUser, {
+		type: "POST",
+		statusCode: {
+			201: function () {
+				reportToUser("Success", "Friend request accepted")
+			},
+			201: function () {
+				reportToUser("Success", "Friend request sent")
+			},
+			403: function () {
+				reportToUser("Failure", "User is already your friend")
+			},
+			404: function () {
+				reportToUser("Failure", "User does not exist")
+			},
+			500: function () {
+				reportToUser("Failure", "Server Error")
+			}
+		}
+	});
+
+}
+
+function rejectFriendRequest(otherUser) {
+
+	$.ajax(url + "/" + CURRENTUSER.name + "/" + otherUser, {
+		type: "DELETE",
+		statusCode: {
+			200: function () {
+				reportToUser("Success", "Friend request removed")
+			},
+			403: function () {
+				reportToUser("Failure", "User is already your friend")
+			},
+			404: function () {
+				reportToUser("Failure", "User does not have a request from you")
+			},
+			500: function () {
+				reportToUser("Failure", "Server Error")
+			}
+		}
+	});
+}
+
+// get friend requests
+function getFriendRequests() {
+
+	$("#listRequests").empty()
+
+	for (let i of CURRENTUSER.receivedRequests)
+		$("#listRequests").append("<li id='" + i + "'>" + i + "</li>")
+
+	// TODO : COULD CAUSE ERRORS
+	$("#listRequests li").click(function () {
+		requestClicked($(this).attr("id"))
+	})
+
+}
+
+
+function requestClicked(friendName) {
+
+	$(function () {
+		$("#dummyDialogConfirm").dialog({
+			resizable: false,
+			title: "Friend request",
+			modal: true,
+			buttons: {
+				"Accept": function () {
+					sendFriendRequest(friendName)
+					$('#' + friendName).remove()
+					$("#dummyDialogConfirm").dialog("close")
+				},
+				"Deny": function () {
+					rejectFriendRequest(friendName)
+					$('#' + friendName).remove()
+					$("#dummyDialogConfirm").dialog("close")
+				}
+			}
+		})
+	})
+
+}
+
+// update CURRENTUSER location
+function updateLocation() {
+
+	let data = {
+		"latitude": CURRENTUSERMARKER.getLatLng().lat,
+		"longitude": CURRENTUSERMARKER.getLatLng().lng
+	}
+
+	$.ajax(url + "/" + CURRENTUSER.name, {
+		type: "POST",
+		data: data,
+		statusCode: {
+			201: function () {
+				$("#currentLatitude").val(data.latitude)
+				$("#currentLongitude").val(data.longitude)
+			},
+			400: function () {
+				reportToUser("FAILURE", "Not a valid number");
+				$("#currentLatitude").val(CURRENTUSER.latitude)
+				$("#currentLongitude").val(CURRENTUSER.longitude)
+			},
+			404: () => { reportToUser("FAILURE", "User not found") },
+			500: () => { reportToUser("FAILURE", "Server error") }
+		}
+	});
+
+}
+
+function refresh() {
+
+	$.getJSON(url + "/" + CURRENTUSER.name)
+		.success((data) => { CURRENTUSER = data })
+		.fail(() => { reportToUser("FAILURE", "Unkown Error") })
+
+	getFriends()
+	getFriendRequests()
+	updateLocation()
+}
+
+
+
+function eventHandlers() {
 
 	// make login dialog box
 	$("#loginDialog").dialog({
@@ -26,7 +287,22 @@ function init() {
 		title: "Login"
 	})
 	$("#loginButton").click(function () {
-		login($("#loginUsername").val())
+		let username = $("#loginUsername").val()
+
+		$.getJSON(url + "/" + username)
+			.success((data) => {
+				MAP = makeMap("map", 4, data.latitude, data.longitude)
+				CURRENTUSER = data
+				CURRENTUSERMARKER = currentLocation()
+
+				getFriends()
+				getFriendRequests()
+				updateLocation()
+				$("#loginDialog").dialog("close")
+				$("#main").show()
+			})
+			.fail(() => { reportToUser("FAILURE", "User not found") })
+
 	})
 	// new user handling
 	$("#loginNewUserButton").click(function () {
@@ -65,12 +341,6 @@ function init() {
 		$("#friendRequestDialog").dialog("close")
 	})
 
-}
-
-function main() {
-	MAP = makeMap("map", 1, 0.0, 0.0)
-	CURRENTUSERMARKER = currentLocation()
-
 	$("#refresh").click(function () {
 		refresh()
 	})
@@ -80,209 +350,4 @@ function main() {
 		refresh()
 	})
 
-	getFriends()
-	getFriendRequests()
-	updateLocation()
 }
-
-function createNewUser(username) {
-	let latitude = 57.1497
-	let longitude = 2.0943
-
-	let data = {
-		"name": username,
-		"latitude": latitude,
-		"longitude": longitude
-	}
-
-	$.post(url, data, function () {
-		alert("User saved: " + name + " (" + latitude + "," + longitude + ")")
-	}
-	)
-}
-
-function getFriends() {
-
-	$("#listFriends").empty()
-
-	for ( let i of FRIENDMARKERS )
-		MAP.removeLayer(i)
-
-	FRIENDMARKERS = []
-
-	for (let i of CURRENTUSER.friends) {
-		$.getJSON(url + "/" + i, function (data) {
-			$("#listFriends").append(
-				"<li id='" + data.name + "'>" + data.name + "<p class='small'> lat: " +
-				data.latitude + " long: " + data.longitude + "</p></li>")
-				let m = makeFriendMarker(data["latitude"], data["longitude"])
-				console.log(data.name)
-				m.name = data.name
-				FRIENDMARKERS.push(m)
-
-			$("#listFriends li").click(function () {
-				console.log($(this).attr("id"))
-				let m = FRIENDMARKERS.find(o => o.name == $(this).attr("id"))
-				MAP.setZoom(7);
-				MAP.panTo(m.getLatLng());
-			})
-		})
-	}
-
-}
-
-function deleteCity(name) {
-	let urlname = url + "/" + name
-	let settings = { type: "DELETE" }
-
-	$.ajax(urlname, settings)
-}
-
-function makeMap(divId, zoomLevel, latitude, longitude) {
-	let location = L.latLng(latitude, longitude)
-	let tempMap = L.map(divId).setView(location, zoomLevel)
-	L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=' + mapBoxApiKey,
-		{
-			attribution: 'Map data &copy <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-			maxZoom: 18,
-			id: 'mapbox.streets',
-			accessToken: mapBoxApiKey
-		}
-	).addTo(tempMap)
-	return tempMap
-}
-
-function currentLocation() {
-	let location = L.latLng({ lat: CURRENTUSER.latitude, lon: CURRENTUSER.longitude })
-	if (CURRENTUSERMARKER) {
-		CURRENTUSERMARKER.getLatLng.lat = CURRENTUSER.latitude;
-		CURRENTUSERMARKER.getLatLng.lng = CURRENTUSER.longitude;
-		return CURRENTUSERMARKER
-	} else {
-		marker = L.marker(location, { draggable: true })
-		marker.addTo(MAP)
-		return marker
-	}
-}
-
-function makeFriendMarker(latitude, longitude) {
-	let marker = L.marker(L.latLng({ lat: latitude, lon: longitude }))
-	marker.addTo(MAP)
-	return marker
-}
-
-function login(username) {
-	$.getJSON(url + "/" + username, function (data) {
-		if (data != null && data.name == username) {
-			$("#loginDialog").dialog("close")
-			$("#main").show()
-			CURRENTUSER = data
-			main()
-		} else {
-			reportToUser("Failed", "not a valid user")
-		}
-	})
-}
-
-
-// push to the dummy dialog
-function reportToUser(title, text) {
-	$("#dummyDialog").dialog({
-		modal: true,
-		autoOpen: false,
-		title: title
-	}).val(text)
-	$("#dummyDialog").dialog("open")
-}
-
-
-
-// send a friend request
-function sendFriendRequest(otherUser) {
-
-	let end = url + "/" + CURRENTUSER.name + "/" + otherUser
-
-	$.post(end, function (d) {
-		console.log(d)
-		reportToUser("Success", "Friend request sent")
-	})
-
-}
-
-// get friend requests
-function getFriendRequests() {
-	for (let i of CURRENTUSER.receivedRequests) {
-		let c = "<li id='" + i + "'>" + i + "</li>"
-		$("#listRequests").append(c)
-		$("#listRequests li").click(function () {
-			console.log($(this).attr("id"))
-			requestClicked($(this).attr("id"))
-		})
-	}
-}
-
-
-function acceptFriend(friendName) {
-	$.post(url + "/" + CURRENTUSER.name + "/" + friendName, function (d) {
-		console.log(d)
-	})
-}
-
-function removeFriend(friendName) {
-	console.log("this definetly works")
-}
-
-function requestClicked(friendName) {
-	$(function () {
-		$("#dummyDialog").dialog({
-			resizable: false,
-			title: "Accept friend request",
-			modal: true,
-			buttons: {
-				"Accept": function () {
-					acceptFriend(friendName)
-					$("#dummyDialog").dialog("close")
-				},
-				"Deny": function () {
-					removeFriend(friendName)
-					$("#dummyDialog").dialog("close")
-				}
-			}
-		})
-	})
-}
-
-// update CURRENTUSER location
-function updateLocation() {
-	let data = {
-		"latitude": CURRENTUSERMARKER.getLatLng().lat,
-		"longitude": CURRENTUSERMARKER.getLatLng().lng
-	}
-
-	$.ajax(url + "/" + CURRENTUSER.name, {
-		type: "POST",
-		data: data,
-		statusCode: {
-			201: function () {
-				$("#currentLatitude").val(data.latitude)
-				$("#currentLongitude").val(data.longitude)
-			},
-			400: function () {
-				alert("Oops, something went wrong");
-				$("#currentLatitude").val(CURRENTUSER.latitude)
-				$("#currentLongitude").val(CURRENTUSER.longitude)
-			}
-		}
-	});
-}
-
-function refresh() {
-	$.getJSON(url + "/" + CURRENTUSER.name, function (data) {
-		if (data != null && data.name == CURRENTUSER.name)
-			CURRENTUSER = data
-	})
-	getFriends()
-	getFriendRequests()
-	updateLocation()
-}
-
