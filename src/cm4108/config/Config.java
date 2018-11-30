@@ -5,7 +5,7 @@ public class Config
 //
 // table name in DynamoDB
 //
-public static final String DYNAMODB_TABLE_NAME="cm4108-cw";
+public static final String DYNAMODB_TABLE_NAME="rgu-cloud-cw";
 //
 // AWS Region. Refer to API to see what regions are available.
 // *** To use a local server, set this to "local". ***

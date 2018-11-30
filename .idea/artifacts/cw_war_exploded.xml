@@ -11,7 +11,7 @@
     <root id="root">
       <element id="directory" name="WEB-INF">
         <element id="directory" name="classes">
-          <element id="module-output" name="cw" />
+          <element id="module-output" name="rgu-cloud-cw" />
         </element>
         <element id="directory" name="lib">
           <element id="library" level="project" name="Maven: com.amazonaws:aws-java-sdk:1.11.428" />
@@ -198,7 +198,7 @@
       <element id="directory" name="META-INF">
         <element id="file-copy" path="$PROJECT_DIR$/target/cw-0.0.1-SNAPSHOT/META-INF/MANIFEST.MF" />
       </element>
-      <element id="javaee-facet-resources" facet="cw/web/Web" />
+      <element id="javaee-facet-resources" facet="rgu-cloud-cw/web/Web" />
     </root>
   </artifact>
 </component>
