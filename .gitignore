@@ -1,0 +1,14 @@
+# folders
+.idea/
+.settings/
+out/
+bin/
+tm/
+target/
+
+# files
+.claspath
+.directory
+.DS_Store
+*.iml
+.project
